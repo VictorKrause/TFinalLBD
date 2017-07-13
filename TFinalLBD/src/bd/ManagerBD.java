@@ -8,6 +8,9 @@ package bd;
 import java.sql.*;
 import java.util.ArrayList;
 
+import model.Equipamento;
+import model.Funcionario;
+
 /**
  *
  * @author 15201677
@@ -30,6 +33,61 @@ public class ManagerBD {
 		return conexao;
 	}
 
+	//Control = 1 -> Funcionario | Control = 2 ->Equipamento
+	public Object getFuncionarioOuEquipamento (String parametro, int control) throws SQLException {
+		Object retorno = null;
+		Connection con = getConnection();
+		if(control == 1){
+			PreparedStatement stmt = con.prepareStatement("SELECT F.LOGIN, F.SENHA, F.DATA_NASCIMENTO, F.DATA_ADMISSAO, F.SEXO, F.NOME_COMPLETO, F.ENDERECO, F.SALARIO_MENSAL\n"
+					+ "FROM FUNCIONARIOS_TRAB F\n"
+					+ "WHERE F.NOME_COMPLETO LIKE (%?%)");
+			stmt.setString(1, parametro);
+			
+			ResultSet resultado = stmt.executeQuery();
+			
+			if(resultado.next()){
+				String login = resultado.getString("LOGIN");
+				String senha = resultado.getString("Senha");
+				Date dataNascimento = resultado.getDate("DATA_NASCIMENTO");
+				Date dataAdmissao = resultado.getDate("DATA_ADMISSAO");
+				char sexo = resultado.getString("SEXO").charAt(0);
+				String nomeCompleto = resultado.getString("NOME_COMPLETO");
+				String endereco = resultado.getString("ENDERECO");
+				Double salarioMensal = resultado.getDouble("SALARIO_MENSAL");	
+				
+				retorno = new Funcionario(login, senha, dataAdmissao, dataNascimento, sexo, nomeCompleto, endereco, salarioMensal);
+			}
+			resultado.close();
+			stmt.close();
+		}
+		else{
+			PreparedStatement stmt = con.prepareStatement("SELECT E.ID_EQUIPAMENTO, E.DATA_AQUISICAO, E.DESCRICAO, E.CUSTO_DIARIA, T.TIPO_EQUIPAMENTO, MANUTENCAO\n"
+					+ "FROM EQUIPAMENTOS_TRAB E INNER JOIN TIPO_EQUIPAMENTO_TRAB T ON E.TIPO = T.ID_TIPO_EQUIPAMENTO\n"
+					+ "WHERE E.DESCRICAO LIKE (%?%)");
+			
+			stmt.setString(1, parametro);
+			
+			ResultSet resultado = stmt.executeQuery();
+			
+			if(resultado.next()){
+				int idEquipamento = resultado.getInt("ID_EQUIPAMENTO");
+				Date dataAquisicao = resultado.getDate("DATA_AQUISICAO");
+				String descricao = resultado.getString("DESCRICAO");
+				double custoDiaria = resultado.getDouble("CUSTO_DIARIA");
+				String tipo = resultado.getString("TIPO_EQUIPAMENTO");
+				char manutencao = resultado.getString("MANUTENCAO").charAt(0);
+				
+				retorno = new Equipamento(idEquipamento, dataAquisicao, descricao, custoDiaria, tipo, manutencao);
+			}
+			
+			resultado.close();
+			stmt.close();
+		}
+		
+		con.close();
+		
+		return retorno;
+	}
 	public ArrayList<String> getAllFuncionarios() throws SQLException {
 		Connection con = getConnection();
 		Statement stmt = con.createStatement();
@@ -120,10 +178,19 @@ public class ManagerBD {
 		
 		Connection con = getConnection();
 		Statement stmt = con.createStatement();
-		String sql = "SELECT F.NOME_COMPLETO\n"
+		String sql = "SELECT F.NOME_COMPLETO, F.LOGIN\n"
 				+ "FROM FUNCIONARIOS_TRAB F\n"
 				+ "WHERE F.LOGIN NOT IN (SELECT E.FUNCIONARIO_LOGIN FROM EQUIPAMENTOS_TRAB E)\n"
 				+ "ORDER BY F.NOME_COMPLETO";
+		ResultSet result = stmt.executeQuery(sql);
+		while(result.next()){
+			nomes.add(result.getString("NOME_COMPLETO"));
+			nomes.add(result.getString("LOGIN"));
+		}
+		
+		result.close();
+		stmt.close();
+		con.close();
 		
 		return nomes;
 	}

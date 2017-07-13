@@ -23,6 +23,7 @@ public class NewClass {
         System.out.println("Ok");
         System.out.println("---------------------------------");
         System.out.println("Select 5");
+        System.out.println("Testar");
     }
     
 }
