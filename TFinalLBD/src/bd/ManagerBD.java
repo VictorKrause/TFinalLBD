@@ -32,6 +32,10 @@ public class ManagerBD {
 
 		return conexao;
 	}
+	
+	private ManagerBD(){
+		
+	}
 
 	//Control = 1 -> Funcionario | Control = 2 ->Equipamento
 	public Object getFuncionarioOuEquipamento (String parametro, int control) throws SQLException {
@@ -107,7 +111,6 @@ public class ManagerBD {
 
 		return allFuncionarios;
 	}
-
 	public ArrayList<String> getRelatorioDeReservasFuturas() throws SQLException {
 		Connection con = getConnection();
 		Statement stmt = con.createStatement();
@@ -134,10 +137,9 @@ public class ManagerBD {
 
 		return strings;
 	}
-
-	//Se retornar -1 é porque não achou
-	public double getValorTotalDeReservaByEquipamentoId(int idEquipamento) throws SQLException {
-		double acum = 0;
+	//Se retornar -1 é porque não achou - POS 0 = Custo total e POS 1 = Dias
+	public double[] getValorTotalDeReservaByEquipamentoId(int idEquipamento) throws SQLException {
+		double[] acum = new double[2];
 
 		Connection con = getConnection();
 		PreparedStatement stmt = con.prepareStatement("SELECT R.DATA_INICIAL, R.DATA_FINAL, E.CUSTO_DIARIA\n"
@@ -160,10 +162,13 @@ public class ManagerBD {
 			for (dias = 0; dtFim.after(dtInicio); dias++) {
 				dtFim.setDate(dtFim.getDate() - 1);
 			}
-			acum = custoDiario * dias;
+			acum[0] = custoDiario * dias;
+			acum[1] = dias;
 		}
-		else
-			acum = -1;
+		else{
+			acum[0] = -1;
+			acum[1] = -1;
+		}
 		
 		result.close();
 		stmt.close();
@@ -172,7 +177,6 @@ public class ManagerBD {
 		return acum;
 
 	}
-
 	public ArrayList<String> getAllFuncionariosSemReserva() throws SQLException{
 		ArrayList<String> nomes = new ArrayList<String>();
 		

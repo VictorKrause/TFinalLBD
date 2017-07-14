@@ -44,8 +44,7 @@ public class Equipamento {
 	}
 	@Override
 	public String toString() {
-		return "Equipamento [idEquipamento=" + idEquipamento + ", dataAquisicao=" + dataAquisicao + ", descricao="
-				+ descricao + ", custoDiario=" + custoDiaria + ", tipo=" + tipo + ", manutencao=" + manutencao + "]";
+		return descricao;
 	}
 	
 	
