@@ -11,6 +11,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import java.awt.event.ActionListener;
+import java.text.ParseException;
 import java.awt.event.ActionEvent;
 
 public class App extends JFrame {
@@ -44,6 +45,17 @@ public class App extends JFrame {
 		setContentPane(contentPane);
 		
 		JButton btnReservarItem = new JButton("Reservar Equipamento");
+		btnReservarItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				FazerReserva frame = null;
+				try {
+					frame = new FazerReserva();
+				} catch (ParseException e) {
+					System.out.println(e.getMessage());
+				}
+				frame.setVisible(true);
+			}
+		});
 		
 		
 		JButton btnListasRelatorios = new JButton("Listas/Relatorios");

@@ -92,17 +92,27 @@ public class ManagerBD {
 		
 		return retorno;
 	}
-	public ArrayList<String> getAllFuncionarios() throws SQLException {
+	public ArrayList<Funcionario> getAllFuncionarios() throws SQLException {
+		ArrayList<Funcionario> allFuncionarios = new ArrayList<Funcionario>();
 		Connection con = getConnection();
 		Statement stmt = con.createStatement();
-		String sql = "SELECT NOME_COMPLETO FROM FUNCIONARIOS_TRAB ORDER BY NOME_COMPLETO ASC";
-
-		ArrayList<String> allFuncionarios = new ArrayList<String>();
+		String sql = "SELECT F.LOGIN, F.SENHA, F.DATA_NASCIMENTO, F.DATA_ADMISSAO, F.SEXO, F.NOME_COMPLETO, F.ENDERECO, F.SALARIO_MENSAL\n"
+				+ "FROM FUNCIONARIOS_TRAB F\n"
+				+ "ORDER BY NOME_COMPLETO ASC";
 
 		ResultSet resultado = stmt.executeQuery(sql);
 
 		while (resultado.next()) {
-			allFuncionarios.add(resultado.getString("NOME_COMPLETO"));
+			String login = resultado.getString("LOGIN");
+			String senha = resultado.getString("Senha");
+			Date dataNascimento = resultado.getDate("DATA_NASCIMENTO");
+			Date dataAdmissao = resultado.getDate("DATA_ADMISSAO");
+			char sexo = resultado.getString("SEXO").charAt(0);
+			String nomeCompleto = resultado.getString("NOME_COMPLETO");
+			String endereco = resultado.getString("ENDERECO");
+			Double salarioMensal = resultado.getDouble("SALARIO_MENSAL");	
+			
+			allFuncionarios.add(new Funcionario(login, senha, dataAdmissao, dataNascimento, sexo, nomeCompleto, endereco, salarioMensal));
 		}
 
 		resultado.close();
@@ -177,6 +187,55 @@ public class ManagerBD {
 		return acum;
 
 	}
+	
+	public ArrayList<Equipamento> getAllEquips() throws SQLException{
+		ArrayList<Equipamento> equips = new ArrayList<Equipamento>();
+		Connection con = getConnection();
+		Statement stmt = con.createStatement();
+		String sql = "SELECT E.ID_EQUIPAMENTO, E.DATA_AQUISICAO, E.DESCRICAO, E.CUSTO_DIARIA, T.TIPO_EQUIPAMENTO, MANUTENCAO\n"
+				+ "FROM EQUIPAMENTOS_TRAB E INNER JOIN TIPO_EQUIPAMENTO_TRAB T ON E.TIPO = T.ID_TIPO_EQUIPAMENTO\n";
+		
+		ResultSet resultado = stmt.executeQuery(sql);
+		
+		while(resultado.next()){
+			int idEquipamento = resultado.getInt("ID_EQUIPAMENTO");
+			Date dataAquisicao = resultado.getDate("DATA_AQUISICAO");
+			String descricao = resultado.getString("DESCRICAO");
+			double custoDiaria = resultado.getDouble("CUSTO_DIARIA");
+			String tipo = resultado.getString("TIPO_EQUIPAMENTO");
+			char manutencao = resultado.getString("MANUTENCAO").charAt(0);
+			
+			equips.add(new Equipamento(idEquipamento, dataAquisicao, descricao, custoDiaria, tipo, manutencao));
+		}
+		
+		resultado.close();
+		stmt.close();
+		con.close();
+		
+		return equips;
+	}
+	
+	public void addReserva(Equipamento equip, Funcionario func, String dataIncial, String dataFinal) throws SQLException{
+		Connection con = getConnection();
+		PreparedStatement stmt = con.prepareStatement("INSERT INTO RESERVAS_TRAB(ID_RESERVA  ,  DATA_INICIAL  ,  DATA_FINAL  ,  EQUIPAMENTO_ID  ,  FUNCIONARIO_LOGIN)\n+"
+				+ "VALUES (?,(TO_DATE('?', 'DD/MM/YYYY')),(TO_DATE('?', 'dd/mm/yyyy')), ?,?");
+		int idReserva = countReservas()+1;
+		int equipID = equip.getIdEquipamento();
+		String login = func.getLogin();
+		
+		stmt.setInt(1, idReserva);
+		stmt.setString(2, dataIncial);
+		stmt.setString(3, dataFinal);
+		stmt.setInt(4, equipID);
+		stmt.setString(5, login);
+		
+		stmt.executeUpdate();
+		
+		stmt.close();
+		con.close();
+
+	}
+	
 	public ArrayList<String> getAllFuncionariosSemReserva() throws SQLException{
 		ArrayList<String> nomes = new ArrayList<String>();
 		
@@ -197,5 +256,20 @@ public class ManagerBD {
 		con.close();
 		
 		return nomes;
+	}
+	
+	private int countReservas() throws SQLException{
+		int count = 0;
+		
+		Connection con = getConnection();
+		Statement stmt = con.createStatement();
+		String sql = "SELECT ID_RESERVA FROM RESERVAS_TRAB";
+		ResultSet resultado = stmt.executeQuery(sql);
+		
+		while(resultado.next())
+			count++;
+		
+		return count;
+		
 	}
 }

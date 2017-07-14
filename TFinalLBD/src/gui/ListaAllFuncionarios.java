@@ -16,6 +16,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 import bd.ManagerBD;
+import model.Funcionario;
 
 import javax.swing.JButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -31,7 +32,7 @@ public class ListaAllFuncionarios extends JFrame {
 	
 	public ListaAllFuncionarios() {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 409, 520);
+		setBounds(100, 100, 897, 520);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -42,14 +43,13 @@ public class ListaAllFuncionarios extends JFrame {
 			gl_contentPane.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPane.createSequentialGroup()
 					.addContainerGap()
-					.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 357, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(16, Short.MAX_VALUE))
+					.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 685, Short.MAX_VALUE))
 		);
 		gl_contentPane.setVerticalGroup(
 			gl_contentPane.createParallelGroup(Alignment.TRAILING)
 				.addGroup(gl_contentPane.createSequentialGroup()
-					.addContainerGap(19, Short.MAX_VALUE)
-					.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 441, GroupLayout.PREFERRED_SIZE)
+					.addGap(19)
+					.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
 					.addContainerGap())
 		);
 		
@@ -58,10 +58,15 @@ public class ListaAllFuncionarios extends JFrame {
 			new Object[][] {
 			},
 			new String[] {
-				"Nome Completo"
+				"Login", "Senha", "Data nascimento", "Data admissao", "Sexo", "Nome Completo", "Endereco", "Salario Mensal (R$)"
 			}
 		));
-		tableFuncionarios.getColumnModel().getColumn(0).setPreferredWidth(354);
+		tableFuncionarios.getColumnModel().getColumn(0).setPreferredWidth(95);
+		tableFuncionarios.getColumnModel().getColumn(1).setPreferredWidth(103);
+		tableFuncionarios.getColumnModel().getColumn(2).setPreferredWidth(142);
+		tableFuncionarios.getColumnModel().getColumn(3).setPreferredWidth(150);
+		tableFuncionarios.getColumnModel().getColumn(5).setPreferredWidth(181);
+		tableFuncionarios.getColumnModel().getColumn(7).setPreferredWidth(110);
 		scrollPane.setViewportView(tableFuncionarios);
 		contentPane.setLayout(gl_contentPane);
 		addRowToTable();
@@ -69,16 +74,24 @@ public class ListaAllFuncionarios extends JFrame {
 	}
 	
 	private void addRowToTable(){
-		ArrayList<String> nomeFuncionarios = new ArrayList<>();
+		ArrayList<Funcionario> funcionarios = new ArrayList<>();
 		try {
-			nomeFuncionarios = ManagerBD.getInstance().getAllFuncionarios();
+			funcionarios = ManagerBD.getInstance().getAllFuncionarios();
 		} catch (SQLException e) {
-			JOptionPane.showMessageDialog(null, nomeFuncionarios);
+			JOptionPane.showMessageDialog(null, "Falha no Banco");
 		}
 		DefaultTableModel model = (DefaultTableModel) tableFuncionarios.getModel();
-		Object rowData[] = new Object[1];
-		for(String nome : nomeFuncionarios){
-			rowData[0] = nome;
+		Object rowData[] = new Object[8];
+		for(Funcionario fun : funcionarios){
+			rowData[0] = fun.getLogin();
+			rowData[1] = fun.getSenha();
+			rowData[2] = fun.getDataNascimento();
+			rowData[3] = fun.getDataAdmissao();
+			rowData[4] = fun.getSexo();
+			rowData[5] = fun.getNomeCompleto();
+			rowData[6] = fun.getEndereco();
+			rowData[7] = fun.getSalarioMensal();
+			
 			model.addRow(rowData);
 		}
 	}
